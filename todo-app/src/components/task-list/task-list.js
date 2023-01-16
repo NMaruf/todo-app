@@ -3,7 +3,7 @@ import Task from "../task";
 
 import './task-list.css'
 
-const TaskList = ( { todos, onDeleted } ) => {
+const TaskList = ( { todos, onDeleted, onToggleDone } ) => {
 
     const elements = todos.map((item) => {
 
@@ -11,7 +11,8 @@ const TaskList = ( { todos, onDeleted } ) => {
 
         return <Task
             { ...itemProps }
-            onDeleted={() => onDeleted(id)}/>
+            onDeleted={() => onDeleted(id)}
+            onToggleDone={() => onToggleDone(id)}/>
     })
 
     return (
