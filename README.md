@@ -1,2 +1,2 @@
 # Приложение todo-app
-todo-app-nmaruf.vercel.app
+https://todo-app-nmaruf.vercel.app
