@@ -1,25 +1,38 @@
-import React from "react";
-import Task from "../task";
+import React, { Component } from 'react'
+import PropTypes from 'prop-types'
+
+import Task from '../task'
 
 import './task-list.css'
 
-const TaskList = ( { todos, onDeleted, onToggleDone } ) => {
+export default class TaskList extends Component {
+  render() {
+    const { todos, onDeleted, onToggleDone, onEditItem } = this.props
 
     const elements = todos.map((item) => {
+      const { id, ...itemProps } = item
 
-        const { id, ...itemProps } = item;
-
-        return <Task
-            { ...itemProps }
-            onDeleted={() => onDeleted(id)}
-            onToggleDone={() => onToggleDone(id)}/>
+      return (
+        <Task
+          {...itemProps}
+          key={id}
+          onDeleted={() => onDeleted(id)}
+          onToggleDone={() => onToggleDone(id)}
+          onEditItem={onEditItem}
+          id={id}
+        />
+      )
     })
 
-    return (
-        <ul className="todo-list">
-            { elements }
-        </ul>
-    )
-};
+    return <ul className="todo-list">{elements}</ul>
+  }
+}
 
-export default TaskList;
+TaskList.defaultProps = { todos: {} }
+
+TaskList.propTypes = {
+  todos: PropTypes.instanceOf(Array),
+  onDeleted: PropTypes.func.isRequired,
+  onToggleDone: PropTypes.func.isRequired,
+  onEditItem: PropTypes.func.isRequired,
+}
