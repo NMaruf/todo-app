@@ -4,6 +4,8 @@ import { formatDistanceToNow } from 'date-fns'
 
 import './task.css'
 
+const cn = require('classnames')
+
 export default class Task extends Component {
   constructor() {
     super()
@@ -24,9 +26,13 @@ export default class Task extends Component {
   render() {
     const { label, time, done, onDeleted, onToggleDone, id } = this.props
 
+    const classNames = cn({
+      completed: done,
+      editing: this.state.editing,
+    })
+
     return (
-      // eslint-disable-next-line no-nested-ternary
-      <li className={done ? 'completed' : this.state.editing ? 'editing' : null} id={id}>
+      <li className={classNames} id={id}>
         <div className="view">
           <input id={id} className="toggle" type="checkbox" onChange={onToggleDone} checked={done} />
           <label htmlFor={id}>

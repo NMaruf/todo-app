@@ -19,10 +19,13 @@ export default class App extends Component {
   filterItems = () => {
     const { todoData, filter } = this.state
 
-    if (filter === 'Completed') {
+    const completed = 'Completed'
+    const active = 'Active'
+
+    if (filter === completed) {
       return [...todoData].filter((el) => el.done === true)
     }
-    if (filter === 'Active') {
+    if (filter === active) {
       return [...todoData].filter((el) => el.done === false)
     }
     return [...todoData]

@@ -6,28 +6,28 @@ import './tasks-filter.css'
 export default class TasksFilter extends Component {
   render() {
     const { onChangeFilter, filter } = this.props
+    const all = 'All'
+    const completed = 'Completed'
+    const active = 'Active'
+    const selected = 'selected'
 
     return (
       <ul className="filters">
         <li>
-          <button type="button" className={filter === 'All' ? 'selected' : null} onClick={() => onChangeFilter('All')}>
+          <button type="button" className={filter === all ? selected : null} onClick={() => onChangeFilter(all)}>
             All
           </button>
         </li>
         <li>
-          <button
-            type="button"
-            className={filter === 'Active' ? 'selected' : null}
-            onClick={() => onChangeFilter('Active')}
-          >
+          <button type="button" className={filter === active ? selected : null} onClick={() => onChangeFilter(active)}>
             Active
           </button>
         </li>
         <li>
           <button
             type="button"
-            className={filter === 'Completed' ? 'selected' : null}
-            onClick={() => onChangeFilter('Completed')}
+            className={filter === completed ? selected : null}
+            onClick={() => onChangeFilter(completed)}
           >
             Completed
           </button>
