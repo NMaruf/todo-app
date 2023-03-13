@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import NewTaskForm from '../new-task-form'
 import TaskList from '../task-list'
@@ -6,41 +6,12 @@ import Footer from '../footer'
 
 import './app.css'
 
-export default class App extends Component {
-  constructor() {
-    super()
-    this.state = {
-      todoData: [],
-      filter: 'All',
-    }
-    this.maxId = 100
-  }
+function App() {
+  const [todoData, setTodoData] = useState([])
+  const [filter, setFilter] = useState('All')
+  const [maxId, setMaxId] = useState(100)
 
-  componentDidMount() {
-    this.interval = setInterval(() => {
-      this.setState(({ todoData }) => {
-        const newArr = todoData.map((el) => {
-          if (el.taskTimer === 0) {
-            return el
-          }
-          if (!el.pause) {
-            // eslint-disable-next-line no-param-reassign
-            el.taskTimer -= 1
-          }
-          return el
-        })
-        return { todoData: newArr }
-      })
-    }, 1000)
-  }
-
-  componentWillUnmount() {
-    clearInterval(this.interval)
-  }
-
-  filterItems = () => {
-    const { todoData, filter } = this.state
-
+  const filterItems = () => {
     const completed = 'Completed'
     const active = 'Active'
 
@@ -53,72 +24,37 @@ export default class App extends Component {
     return [...todoData]
   }
 
-  changeFilter = (data) => {
-    this.setState({ filter: data })
+  const changeFilter = (data) => setFilter(data)
+
+  const createTodoItem = (label, taskTimer) => ({
+    label,
+    done: false,
+    time: new Date(),
+    taskTimer,
+    pause: true,
+    id: maxId,
+  })
+
+  const addItem = (text, timer) => {
+    setMaxId((v) => v + 1)
+    const newItem = createTodoItem(text, timer)
+
+    setTodoData([...todoData, newItem])
   }
 
-  addItem = (text, timer = 10) => {
-    const newItem = this.createTodoItem(text, timer)
-
-    this.setState(({ todoData }) => {
-      const newArr = [...todoData, newItem]
-
-      return { todoData: newArr }
-    })
+  const deleteItem = (id) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    setTodoData([...todoData.slice(0, idx), ...todoData.slice(idx + 1)])
   }
 
-  deleteItem = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id)
+  const editItem = (ident, text) => {
+    const idx = todoData.findIndex((el) => el.id === ident)
+    todoData[idx].label = text
 
-      const newArray = [...todoData.slice(0, idx), ...todoData.slice(idx + 1)]
-
-      return { todoData: newArray }
-    })
+    setTodoData([...todoData.slice(0, idx), todoData[idx], ...todoData.slice(idx + 1)])
   }
 
-  editItem = (ident, text) => {
-    this.setState(({ todoData }) => ({
-      todoData: todoData.map((element) => {
-        // eslint-disable-next-line no-param-reassign
-        if (element.id === ident) element.label = text
-        return element
-      }),
-    }))
-  }
-
-  onToggleDone = (id) => {
-    this.setState(({ todoData }) => ({ todoData: this.toggleProperty(todoData, id, 'done') }))
-  }
-
-  clearCompleted = () => {
-    this.setState(({ todoData }) => {
-      const data = [...todoData].filter((el) => !el.done)
-
-      return { todoData: data }
-    })
-  }
-
-  stopTimer = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id)
-      const newObj = [{ ...todoData[idx], pause: true }]
-      const newData = [...todoData.slice(0, idx), ...newObj, ...todoData.slice(idx + 1)]
-      return { todoData: newData }
-    })
-  }
-
-  startTimer = (id) => {
-    this.setState(({ todoData }) => {
-      const idx = todoData.findIndex((el) => el.id === id)
-      const newObj = [{ ...todoData[idx], pause: false }]
-      const newData = [...todoData.slice(0, idx), ...newObj, ...todoData.slice(idx + 1)]
-      return { todoData: newData }
-    })
-  }
-
-  // eslint-disable-next-line class-methods-use-this
-  toggleProperty(arr, id, propName) {
+  const toggleProperty = (arr, id, propName) => {
     const idx = arr.findIndex((el) => el.id === id)
     const oldItem = arr[idx]
     const newItem = { ...oldItem, [propName]: !oldItem[propName] }
@@ -126,47 +62,70 @@ export default class App extends Component {
     return [...arr.slice(0, idx), newItem, ...arr.slice(idx + 1)]
   }
 
-  createTodoItem(label, taskTimer) {
-    return {
-      label,
-      done: false,
-      time: new Date(),
-      taskTimer,
-      pause: true,
-      id: this.maxId++,
-    }
+  const onToggleDone = (id) => {
+    setTodoData(toggleProperty(todoData, id, 'done'))
   }
 
-  render() {
-    const { todoData, filter } = this.state
+  const clearCompleted = () => {
+    const data = [...todoData].filter((el) => !el.done)
 
-    const doneCount = todoData.filter((el) => el.done).length
-    const todoCount = todoData.length - doneCount
+    setTodoData([...data])
+  }
 
-    return (
-      <section className="todoapp">
-        <header className="header">
-          <h1>todos</h1>
-          <NewTaskForm onAddedItem={this.addItem} />
-        </header>
-        <section className="main">
-          <TaskList
-            todos={this.filterItems()}
-            onDeleted={this.deleteItem}
-            onToggleDone={this.onToggleDone}
-            /* eslint-disable-next-line react/jsx-no-bind */
-            onEditItem={this.editItem.bind(this)}
-            onStartTimer={this.startTimer}
-            onStopTimer={this.stopTimer}
-          />
-          <Footer
-            todo={todoCount}
-            onClearCompleted={this.clearCompleted}
-            onChangeFilter={this.changeFilter}
-            filter={filter}
-          />
-        </section>
+  const stopTimer = (id) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    const newObj = [{ ...todoData[idx], pause: true }]
+
+    setTodoData([...todoData.slice(0, idx), ...newObj, ...todoData.slice(idx + 1)])
+  }
+
+  const startTimer = (id) => {
+    const idx = todoData.findIndex((el) => el.id === id)
+    const newObj = [{ ...todoData[idx], pause: false }]
+
+    setTodoData([...todoData.slice(0, idx), ...newObj, ...todoData.slice(idx + 1)])
+  }
+
+  useEffect(() => {
+    const timeout = setInterval(() => {
+      const newArr = todoData.map((el) => {
+        if (el.taskTimer === 0) {
+          return el
+        }
+        if (!el.pause) {
+          // eslint-disable-next-line no-param-reassign
+          el.taskTimer -= 1
+        }
+        return el
+      })
+      setTodoData([...newArr])
+    }, 1000)
+
+    return () => clearTimeout(timeout)
+  }, [todoData])
+
+  const doneCount = todoData.filter((el) => el.done).length
+  const todoCount = todoData.length - doneCount
+
+  return (
+    <section className="todoapp">
+      <header className="header">
+        <h1>todos</h1>
+        <NewTaskForm onAddedItem={addItem} />
+      </header>
+      <section className="main">
+        <TaskList
+          todos={filterItems()}
+          onDeleted={deleteItem}
+          onToggleDone={onToggleDone}
+          onEditItem={editItem}
+          onStartTimer={startTimer}
+          onStopTimer={stopTimer}
+        />
+        <Footer todo={todoCount} onClearCompleted={clearCompleted} onChangeFilter={changeFilter} filter={filter} />
       </section>
-    )
-  }
+    </section>
+  )
 }
+
+export default App
